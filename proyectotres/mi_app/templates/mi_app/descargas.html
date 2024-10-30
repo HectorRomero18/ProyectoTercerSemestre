@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Descargas</title>  
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    {% load static %}  
+    
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container mx-auto mt-10 text-center">  
+        <h1 class="text-3xl font-bold">Personas Atendidas</h1>  
+        
+        <table class="table-auto w-full mt-4">  
+            <thead>
+                <tr class="bg-gray-200">  
+                    <th class="px-4 py-2">Turno</th>  
+                    <th class="px-4 py-2">Nombre</th>  
+                    <th class="px-4 py-2">Apellido</th>  
+                    <th class="px-4 py-2">Edad</th>  
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                {% for persona in personas_atendidas %}
+                    <tr class="hover:bg-gray-100">  
+                        <td class="border px-4 py-2">{{ persona.turno }}</td>  
+                        <td class="border px-4 py-2">{{ persona.nombre }}</td>  
+                        <td class="border px-4 py-2">{{ persona.apellido }}</td>  
+                        <td class="border px-4 py-2">{{ persona.edad }}</td>  
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No hay personas atendidas.</td>  
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p class="mt-4">Haz clic en el botón para descargar el PDF con las personas atendidas.</p>  
+        
+        <button onclick="downloadPDF()" class="bg-blue-500 text-white py-2 px-4 rounded">  
+            Descargar PDF
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{% static 'js/descargas.js' %}"></script>
+</body>
+</html>

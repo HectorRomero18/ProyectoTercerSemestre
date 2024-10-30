@@ -1,0 +1,38 @@
+        /* Estilos CSS para la página */
+        body {
+            background-color: #f0f4f8;  /* Color de fondo suave */
+            font-family: 'Arial', sans-serif;  /* Fuente de la página */
+            color: #333;  /* Color del texto */
+        }
+        .form-container {
+            background: white;  /* Fondo blanco para el contenedor del formulario */
+            border-radius: 10px;  /* Bordes redondeados */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  /* Sombra para dar profundidad */
+            padding: 40px;  /* Espaciado interno */
+            max-width: 500px;  /* Ancho máximo del contenedor */
+            margin: auto;  /* Centrar el contenedor */
+            margin-top: 100px;  /* Margen superior para separación */
+        }
+        h2 {
+            color: #007bff;  /* Color del encabezado */
+            margin-bottom: 20px;  /* Margen inferior */
+        }
+        .form-group {
+            margin-bottom: 20px;  /* Margen inferior para los grupos de formulario */
+        }
+        .btn-custom {
+            background-color: #007bff;  /* Color de fondo del botón */
+            border: none;  /* Sin borde */
+            color: white;  /* Color del texto en el botón */
+            padding: 10px 20px;  /* Espaciado interno del botón */
+            border-radius: 5px;  /* Bordes redondeados del botón */
+            transition: background-color 0.3s ease;  /* Transición suave al cambiar de color */
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;  /* Color de fondo al pasar el mouse sobre el botón */
+        }
+        .footer {
+            margin-top: 20px;  /* Margen superior para el pie de página */
+            text-align: center;  /* Centrar el texto */
+            color: #666;  /* Color del texto en el pie de página */
+        }
