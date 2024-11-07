@@ -48,20 +48,7 @@
                             </div>
                             <div>
                                 <a href="{% url 'descargas' %}" class="font-semibold text-gray-900">Descargas</a>
-                                <p class="mt-1 text-gray-600">Descarga la tabla de personas atendidas en formato PDF.</p>
-
-                            </div>
-                        </div>
-                        <div class="flex gap-x-6 rounded-lg p-4 hover:bg-gray-50">
-                            <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50">
-                                <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2L12 12" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 12l-4 4M12 12l4 4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <a href="#" class="font-semibold text-gray-900">En espera</a>
-                                <p class="mt-1 text-gray-600">Revisa los tickets que están en espera de atención.</p>
+                                <p class="mt-1 text-gray-600">Descarga la tabla de personas en formato PDF o CSV.</p>
 
                             </div>
                         </div>
@@ -87,7 +74,7 @@
                             </div>
                             <div>
                                 <a href="{% url 'cargar_csv' %}" class="font-semibold text-gray-900">Cargar Archivo</a>
-                                <p class="mt-1 text-gray-600">Sube un archivo CSV o PDF para gestionar los tickets de manera eficiente.</p>
+                                <p class="mt-1 text-gray-600">Sube un archivo CSV para gestionar los tickets de manera eficiente.</p>
 
                             </div>
                         </div>
@@ -99,12 +86,60 @@
     </nav>
 
     <div class="container mx-auto mt-10 text-center">
-        <h1 class="text-3xl font-bold">Gestion de Personas</h1>
+        <h1 class="text-3xl font-bold">Gestión de Personas</h1>
         <p class="mt-4">Bienvenido a nuestra plataforma de Gestión de Tickets. Aquí podrás crear, administrar y dar seguimiento a tus solicitudes de manera eficiente.</p>
         <p class="mt-2">Explora nuestras funcionalidades diseñadas para optimizar la atención al cliente y mejorar la experiencia de gestión de tickets.</p>
-
-
+        <br>
+        <!-- Mini Tabla de "Ticket Actual" -->
+        <div id="ticket-actual" class="mb-4 p-4 border rounded-md bg-gray-50 shadow-md">
+            <h3 class="text-xl font-bold">Ticket Actual</h3>
+            <table class="table-auto w-full mt-2">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2">Turno</th>
+                        <th class="px-4 py-2">Nombre</th>
+                        <th class="px-4 py-2">Apellido</th>
+                        <th class="px-4 py-2">Edad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="ticket-actual-row">
+                        <td colspan="4" class="text-center">Selecciona un ticket para ver los detalles.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 class="text-2xl font-bold mt-10">Personas Registradas / Lista de Espera</h2>
+        <br>
+
+    
+        <!-- Contenedor con Flexbox para alinear formularios -->
+        <div class="flex justify-between items-center mb-4">
+            <!-- Formulario para ordenar -->
+            <form method="GET" action="{% url 'ordenar_personas' %}" class="d-flex align-items-center">
+                <label for="atributo" class="me-2 text-gray-700 font-semibold">Ordenar por:</label>
+                <select name="atributo" id="atributo" class="form-select me-2 rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-300 w-32" aria-label="Seleccionar atributo para ordenar">
+                    <option value="nombre">Nombre</option>
+                    <option value="apellido">Apellido</option>
+                    <option value="edad">Edad</option>
+                    <option value="atendido">Estado</option>
+                </select>
+                <button type="submit" class="btn btn-primary rounded-md shadow-md hover:bg-blue-600 transition duration-200">Ordenar</button>
+            </form>
+    
+            <!-- Formulario para buscar persona alineado a la derecha -->
+            <form method="GET" action="{% url 'buscar_persona' %}" class="d-flex align-items-center">
+                <input type="text" name="q" id="q" placeholder="Buscar persona" class="form-control me-2 w-40 rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-300" required>
+                <select name="atributo" id="atributo-busqueda" class="form-select me-2 w-32 rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-300" aria-label="Seleccionar atributo para buscar">
+                    <option value="nombre">Nombre</option>
+                    <option value="apellido">Apellido</option>
+                    <option value="edad">Edad</option>
+                </select>
+                <button type="submit" class="btn btn-primary rounded-md shadow-md hover:bg-blue-600 transition duration-200">Buscar</button>
+            </form>
+        </div>
+    
+        <!-- Tabla de personas -->
         <table class="table-auto w-full mt-4">
             <thead>
                 <tr class="bg-gray-200">
@@ -118,7 +153,8 @@
             </thead>
             <tbody>
                 {% for persona in personas %}
-                    <tr class="hover:bg-gray-100">
+                    <tr class="hover:bg-gray-100 {% if persona in personas_encontradas %} bg-yellow-300 transition duration-300 transform scale-105 {% endif %}"
+                        onclick="updateTicketActual('{{ persona.turno }}', '{{ persona.nombre }}', '{{ persona.apellido }}', '{{ persona.edad }}')">
                         <td class="border px-4 py-2">{{ persona.turno }}</td>
                         <td class="border px-4 py-2">{{ persona.nombre }}</td>
                         <td class="border px-4 py-2">{{ persona.apellido }}</td>
@@ -136,8 +172,7 @@
                                {% if persona.atendido %} disabled {% endif %}>Atender</a>
                             <a href="#" class="btn btn-danger" 
                                onclick="showDeleteAlert('{{ persona.nombre }}', {{ persona.id }})">Eliminar</a>
-                        </td>                                              
-                       
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
@@ -146,8 +181,8 @@
                 {% endfor %}
             </tbody>
         </table>
-        
     </div>
+    
 
     <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -155,5 +190,21 @@
     <!-- SweetAlert JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/scripts.js' %}"></script>
+    <script>
+        // Función para actualizar la mini tabla de "Ticket Actual"
+        function updateTicketActual(turno, nombre, apellido, edad) {
+            // Obtén el elemento de la fila en la mini tabla
+            const ticketRow = document.getElementById('ticket-actual-row');
+            
+            // Actualiza los datos en la mini tabla
+            ticketRow.innerHTML = `
+                <td class="px-4 py-2">${turno}</td>
+                <td class="px-4 py-2">${nombre}</td>
+                <td class="px-4 py-2">${apellido}</td>
+                <td class="px-4 py-2">${edad}</td>
+            `;
+        }
+    </script>
+    
 </body>
 </html>

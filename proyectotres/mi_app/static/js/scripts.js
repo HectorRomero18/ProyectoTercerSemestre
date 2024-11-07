@@ -66,3 +66,4 @@ function checkAttended(atendido, nombre) {
 event.preventDefault();
 }
 }
+

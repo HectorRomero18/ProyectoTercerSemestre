@@ -34,3 +34,24 @@ nav {
 #overlay.show {
     display: block;
 }
+/* Estilos adicionales para mejorar la apariencia */
+.form-select {
+    padding: 0.25rem; /* Ajustar el padding para un cuadro más pequeño */
+    font-size: 0.875rem; /* Tamaño de fuente más pequeño */
+    background-color: #fff;
+    width: 120px; /* Ajusta el ancho del select según sea necesario */
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}

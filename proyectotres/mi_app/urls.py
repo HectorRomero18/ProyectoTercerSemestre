@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from .views import eliminar_persona, cargar_archivo, descargar_csv, descargar_pdf, descargas, descargar_csv_completo, descargar_pdf_completo
+from .views import eliminar_persona, cargar_archivo, descargar_csv, descargar_pdf, descargas, descargar_csv_completo, descargar_pdf_completo, ordenar_lista_enlazada, buscar_personas
 
 urlpatterns = [
     path('', views.hola_mundo, name='hola_mundo'),  # La vista 'home' debe estar definida en views.py
@@ -16,6 +16,8 @@ urlpatterns = [
     path('atender-persona/<int:persona_id>/', views.atender_persona, name='atender_persona'),
     path('personas-atendidas/', views.personas_atendidas, name='personas_atendidas'),
     path('cargar-csv/', cargar_archivo, name='cargar_csv'),
+    path('ordenar/', ordenar_lista_enlazada, name='ordenar_personas'),
+    path('buscar/', buscar_personas, name='buscar_persona'),
     # Puedes agregar más rutas aquí
 ]
 if settings.DEBUG:

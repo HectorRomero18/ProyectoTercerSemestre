@@ -11,13 +11,11 @@ personas = [
     ["Lamine", "Yamal", 25, 5, 0, "", "Victor"],
 ]
 
-# Definir la ruta
-directorio = '\ProyectoED\ProyectoTercerSemestre\proyectotres\csv_guardados'
+# Definir la ruta (en el mismo directorio del script)
 nombre_archivo = 'personas.csv'
-ruta_archivo = os.path.join(directorio, nombre_archivo)
 
-# Crear y escribir en el archivo CSV
-with open(ruta_archivo, 'w', newline='', encoding='utf-8') as archivo_csv:
+# Crear y escribir en el archivo CSV en el mismo directorio
+with open(nombre_archivo, 'w', newline='', encoding='utf-8') as archivo_csv:
     writer = csv.writer(archivo_csv)
     writer.writerows(personas)
 
