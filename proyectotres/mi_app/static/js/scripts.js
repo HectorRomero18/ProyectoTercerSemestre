@@ -53,17 +53,3 @@ function showDeleteAlert(nombre, id) {
 
 
 
-
-
-function checkAttended(atendido, nombre) {
-    if (atendido) {
-        Swal.fire({
-            title: 'Atendido',
-            text: `${nombre} ya ha sido atendido.`,
-            icon: 'info',
-            confirmButtonText: 'Aceptar'
-});
-event.preventDefault();
-}
-}
-

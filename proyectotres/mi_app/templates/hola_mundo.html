@@ -24,6 +24,8 @@
                         <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                     </svg>
                 </button>
+    
+                <!-- Dropdown Menu -->
                 <div id="dropdown-menu" class="dropdown-menu rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
                     <div class="p-4">
                         <div class="flex gap-x-6 rounded-lg p-4 hover:bg-gray-50">
@@ -36,9 +38,9 @@
                             <div>
                                 <a href="{% url 'formulario' %}" class="font-semibold text-gray-900">Regístrate</a>
                                 <p class="mt-1 text-gray-600">Completa el formulario para registrar un nuevo ticket.</p>
-
                             </div>
                         </div>
+    
                         <div class="flex gap-x-6 rounded-lg p-4 hover:bg-gray-50">
                             <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50">
                                 <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -49,9 +51,9 @@
                             <div>
                                 <a href="{% url 'descargas' %}" class="font-semibold text-gray-900">Descargas</a>
                                 <p class="mt-1 text-gray-600">Descarga la tabla de personas en formato PDF o CSV.</p>
-
                             </div>
                         </div>
+    
                         <div class="flex gap-x-6 rounded-lg p-4 hover:bg-gray-50">
                             <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50">
                                 <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -62,9 +64,9 @@
                             <div>
                                 <a href="{% url 'personas_atendidas' %}" class="font-semibold text-gray-900">Atendidos</a>
                                 <p class="mt-1 text-gray-600">Consulta la lista de tickets atendidos y su estado.</p>
-
                             </div>
                         </div>
+    
                         <div class="flex gap-x-6 rounded-lg p-4 hover:bg-gray-50">
                             <div class="mt-1 flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50">
                                 <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -75,21 +77,31 @@
                             <div>
                                 <a href="{% url 'cargar_csv' %}" class="font-semibold text-gray-900">Cargar Archivo</a>
                                 <p class="mt-1 text-gray-600">Sube un archivo CSV para gestionar los tickets de manera eficiente.</p>
-
                             </div>
+                        </div>
+    
+                        <!-- Botón para eliminar todas las personas -->
+                        <div class="flex gap-x-6 rounded-lg p-4 hover:bg-red-100">
+                            <form method="POST" action="{% url 'eliminar_todas_personas' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger text-white">Borrar Tabla</button>
+                            </form>
                         </div>
                     </div>
                 </div>
+    
+                <!-- Overlay -->
                 <div id="overlay" class="overlay" onclick="toggleDropdown()"></div>
             </div>
         </div>
     </nav>
-
+    
     <div class="container mx-auto mt-10 text-center">
         <h1 class="text-3xl font-bold">Gestión de Personas</h1>
         <p class="mt-4">Bienvenido a nuestra plataforma de Gestión de Tickets. Aquí podrás crear, administrar y dar seguimiento a tus solicitudes de manera eficiente.</p>
         <p class="mt-2">Explora nuestras funcionalidades diseñadas para optimizar la atención al cliente y mejorar la experiencia de gestión de tickets.</p>
         <br>
+    
         <!-- Mini Tabla de "Ticket Actual" -->
         <div id="ticket-actual" class="mb-4 p-4 border rounded-md bg-gray-50 shadow-md">
             <h3 class="text-xl font-bold">Ticket Actual</h3>
@@ -104,14 +116,32 @@
                 </thead>
                 <tbody>
                     <tr id="ticket-actual-row">
-                        <td colspan="4" class="text-center">Selecciona un ticket para ver los detalles.</td>
+                        {% if persona_atender %}
+                        <td class="px-4 py-2">{{ persona_atender.turno }}</td>
+                        <td class="px-4 py-2">{{ persona_atender.nombre }}</td>
+                        <td class="px-4 py-2">{{ persona_atender.apellido }}</td>
+                        <td class="px-4 py-2">{{ persona_atender.edad }}</td>
+                        {% else %}
+                        <td colspan="4" class="text-center">No hay persona a atender.</td>
+                        {% endif %}
                     </tr>
                 </tbody>
             </table>
+    
+            <!-- Botón "Atender" -->
+            <a href="javascript:void(0);" id="atender-button" class="btn btn-primary mt-4">
+                Atender
+            </a>
+            
+            <!-- Formulario con CSRF para el POST (esto no se verá, es solo para el script) -->
+            <form method="POST" id="atender-form" action="" style="display:none;">
+                {% csrf_token %}
+                <!-- Puedes agregar otros campos como fecha_cita o persona_encargada aquí si es necesario -->
+            </form>
         </div>
+    
         <h2 class="text-2xl font-bold mt-10">Personas Registradas / Lista de Espera</h2>
         <br>
-
     
         <!-- Contenedor con Flexbox para alinear formularios -->
         <div class="flex justify-between items-center mb-4">
@@ -138,6 +168,7 @@
                 <button type="submit" class="btn btn-primary rounded-md shadow-md hover:bg-blue-600 transition duration-200">Buscar</button>
             </form>
         </div>
+
     
         <!-- Tabla de personas -->
         <table class="table-auto w-full mt-4">
@@ -153,58 +184,124 @@
             </thead>
             <tbody>
                 {% for persona in personas %}
-                    <tr class="hover:bg-gray-100 {% if persona in personas_encontradas %} bg-yellow-300 transition duration-300 transform scale-105 {% endif %}"
-                        onclick="updateTicketActual('{{ persona.turno }}', '{{ persona.nombre }}', '{{ persona.apellido }}', '{{ persona.edad }}')">
-                        <td class="border px-4 py-2">{{ persona.turno }}</td>
-                        <td class="border px-4 py-2">{{ persona.nombre }}</td>
-                        <td class="border px-4 py-2">{{ persona.apellido }}</td>
-                        <td class="border px-4 py-2">{{ persona.edad }}</td>
-                        <td class="border px-4 py-2">
-                            {% if persona.atendido %}
-                                <span class="text-success">Atendido</span>
-                            {% else %}
-                                <span class="text-danger">No atendido</span>
-                            {% endif %}
-                        </td>
-                        <td class="border px-4 py-2">
-                            <a href="{% url 'atender_persona' persona.id %}" class="btn btn-primary" 
-                               onclick="checkAttended({{ persona.atendido|yesno:'true,false' }}, '{{ persona.nombre }}', event)" 
-                               {% if persona.atendido %} disabled {% endif %}>Atender</a>
-                            <a href="#" class="btn btn-danger" 
-                               onclick="showDeleteAlert('{{ persona.nombre }}', {{ persona.id }})">Eliminar</a>
-                        </td>
-                    </tr>
+                <tr class="hover:bg-gray-100 {% if persona in personas_encontradas %} bg-yellow-300 transition duration-300 transform scale-105 {% endif %}" 
+                    data-persona-id="{{ persona.id }}">
+                    <td class="border px-4 py-2 turno">{{ persona.turno }}</td>
+                    <td class="border px-4 py-2 nombre">{{ persona.nombre }}</td>
+                    <td class="border px-4 py-2 apellido">{{ persona.apellido }}</td>
+                    <td class="border px-4 py-2 edad">{{ persona.edad }}</td>
+                    <td class="border px-4 py-2">
+                        {% if persona.atendido %}
+                        <span class="text-success">Atendido</span>
+                        {% else %}
+                        <span class="text-danger">No atendido</span>
+                        {% endif %}
+                    </td>
+                    <td class="border px-4 py-2">
+                        <a href="#" class="btn btn-danger" onclick="showDeleteAlert('{{ persona.nombre }}', {{ persona.id }})">Eliminar</a>
+                    </td>
+                </tr>
                 {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">No hay personas registradas.</td>
-                    </tr>
+                <tr>
+                    <td colspan="6" class="text-center">No hay personas registradas.</td>
+                </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
     </div>
     
-
-    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    <!-- SweetAlert JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/scripts.js' %}"></script>
     <script>
-        // Función para actualizar la mini tabla de "Ticket Actual"
-        function updateTicketActual(turno, nombre, apellido, edad) {
-            // Obtén el elemento de la fila en la mini tabla
+        // Variable global para almacenar el id de la persona seleccionada
+        let selectedPersonaId = null;
+
+        // Función que actualiza el contenido de la mini tabla cuando se hace clic en una persona de la tabla principal
+        function updateTicketActual(turno, nombre, apellido, edad, personaId) {
             const ticketRow = document.getElementById('ticket-actual-row');
-            
-            // Actualiza los datos en la mini tabla
             ticketRow.innerHTML = `
                 <td class="px-4 py-2">${turno}</td>
                 <td class="px-4 py-2">${nombre}</td>
                 <td class="px-4 py-2">${apellido}</td>
                 <td class="px-4 py-2">${edad}</td>
             `;
+
+            // Almacenar el id de la persona seleccionada en la variable global
+            selectedPersonaId = personaId;
         }
+
+        // Agregar el evento de clic en las filas de la tabla para actualizar la mini tabla y seleccionar la persona
+        document.querySelectorAll('tr[data-persona-id]').forEach(row => {
+            row.addEventListener('click', function() {
+                const turno = this.querySelector('.turno').textContent;
+                const nombre = this.querySelector('.nombre').textContent;
+                const apellido = this.querySelector('.apellido').textContent;
+                const edad = this.querySelector('.edad').textContent;
+                const personaId = this.dataset.personaId;  // Usamos el atributo data-persona-id
+
+                // Actualizamos la mini tabla con los datos de la persona seleccionada
+                updateTicketActual(turno, nombre, apellido, edad, personaId);
+            });
+        });
+
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const atenderButton = document.getElementById('atender-button');
+    
+            if (atenderButton) {
+                atenderButton.addEventListener('click', function(e) {
+                    e.preventDefault();  // Prevenir la acción predeterminada (como un redireccionamiento automático)
+    
+                    // Verificar si hay una persona seleccionada
+                    if (selectedPersonaId === null) {
+                        Swal.fire({
+                            title: 'No se ha seleccionado a nadie',
+                            text: 'Por favor selecciona una persona de la lista.',
+                            icon: 'warning',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        return;
+                    }
+    
+                    // Verificar si la persona ya fue atendida
+                    const personaAtendida = "{{ persona_atender.atendido|yesno:'true,false' }}" === "true";  // Convertimos a booleano
+    
+                    if (personaAtendida) {
+                        // Si la persona ya fue atendida, mostrar el alert de "Ya Atendido"
+                        Swal.fire({
+                            title: 'Persona ya atendida',
+                            text: 'Esta persona ya ha sido atendida.',
+                            icon: 'info',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    } else {
+                        // Si no ha sido atendida, mostrar SweetAlert para confirmar si desea atenderla
+                        Swal.fire({
+                            title: '¿Estás seguro?',
+                            text: "Esta persona será atendida y su turno será marcado como 'Atendido'.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, atender',
+                            cancelButtonText: 'Cancelar',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Redirigir al template de 'atender_persona' con el ID de la persona seleccionada
+                                window.location.href = '/atender-persona/' + selectedPersonaId + '/';  // Ajusta esta URL según tu configuración
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/scripts.js' %}"></script>
     
 </body>
 </html>

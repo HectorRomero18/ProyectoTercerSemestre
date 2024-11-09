@@ -15,13 +15,23 @@ from reportlab.pdfgen import canvas  # Para generar PDF
 
 # Vista para mostrar un saludo y la lista de personas
 def hola_mundo(request):
-    personas = Persona.objects.all()  # Obtener todas las personas
-    atendidos = [persona for persona in personas if persona.atendido]  # Filtrar las personas atendidas
+    # Obtener todas las personas
+    personas = Persona.objects.all()
     
+    # Filtrar las personas atendidas y no atendidas
+    atendidos = [persona for persona in personas if persona.atendido]
+    no_atendidos = [persona for persona in personas if not persona.atendido]
+    
+    # Obtener la primera persona no atendida
+    persona_atender = no_atendidos[0] if no_atendidos else None
+
+    # Pasar las personas al contexto para que se muestren en el template
     return render(request, 'hola_mundo.html', {
-        'personas': personas,  # Pasar todas las personas a la plantilla
-        'atendidos': atendidos,  # Pasar lista de atendidos a la plantilla
+        'personas': personas,           # Todas las personas
+        'atendidos': atendidos,         # Personas atendidas
+        'persona_atender': persona_atender,  # La persona que se debe atender
     })
+
 
 # Vista para manejar el formulario de registro de personas
 def formulario(request):
@@ -75,29 +85,55 @@ def eliminar_persona(request, persona_id):
     # Redirigir a la vista principal
     return redirect('hola_mundo')
 
+def eliminar_todas_personas(request):
+    if request.method == 'POST':
+        try:
+            # Eliminar todas las personas de la base de datos
+            Persona.objects.all().delete()
+
+            # Reajustar los turnos de las personas restantes (en este caso no hay ninguna)
+            # Puedes omitir esta parte si ya no hay personas para reasignar los turnos.
+            
+            # Redirigir a la vista principal (puedes cambiar 'hola_mundo' por el nombre de tu URL)
+            return redirect('hola_mundo')
+        except Exception as e:
+            print(f"Error al eliminar todas las personas: {e}")
+            # Redirigir a la vista principal con un mensaje de error si algo falla
+            return redirect('hola_mundo')
+    
+    # Si no es una solicitud POST, redirigir a la vista principal
+    return redirect('hola_mundo')
 
 # Vista para atender a una persona
 def atender_persona(request, persona_id):
     persona = get_object_or_404(Persona, id=persona_id)  # Obtener persona por ID
+    
+    # Verificar si la persona ya ha sido atendida
+    if persona.atendido:
+        # Si la persona ya ha sido atendida, puedes redirigir a otra página o devolver un mensaje de error
+        return render(request, 'mi_app/atender.html', {'persona': persona, 'error': 'Esta persona ya ha sido atendida.'})
+    
     try:
         if request.method == 'POST':  # Si se envía el formulario para atender
             # Obtener datos del formulario
             fecha_cita = request.POST['fecha_cita']
             persona_encargada = request.POST['persona_encargada']
 
-            # Guardar los datos en la persona
+            # Asignar los datos a la persona
             persona.fecha_cita = fecha_cita
             persona.persona_encargada = persona_encargada
-            persona.atendido = True  # Asignar el estado de atendido
-            
+            persona.atendido = True  # Marcar como atendido
+
             persona.save()  # Guardar cambios en la base de datos
             
-            return redirect('hola_mundo')  # Redirigir a hola_mundo
+            return redirect('hola_mundo')  # Redirigir a la página de éxito o de lista de personas
     except Exception as e:
-        print(f"Ocurrio un error al atender a la persona: {e}")  # Imprimir error en la consola
-        return render(request, 'mi_app/atender.html')  # Renderizar la página de atender
+        print(f"Ocurrió un error al atender a la persona: {e}")  # Imprimir error en la consola
+        return render(request, 'mi_app/atender.html', {'persona': persona, 'error': 'Ocurrió un error al intentar atender a la persona.'})
 
-    return render(request, 'mi_app/atender.html', {'persona': persona} )  # Renderizar si no es un POST
+    # Si no es un POST, renderizar la página con la persona que se va a atender
+    return render(request, 'mi_app/atender.html', {'persona': persona})
+
 
 # Vista para mostrar las personas atendidas
 def personas_atendidas(request):
@@ -282,10 +318,10 @@ def cargar_archivo(request):
 # Vista para ordenar personas por un atributo
 
 def ordenar_lista_enlazada(request):
-    atributo = request.GET.get('atributo', 'nombre')
-    
+    atributo = request.GET.get('atributo', 'nombre')  # Obtener el atributo de ordenación
+
     # Recuperar todas las personas desde la base de datos
-    personas = Persona.objects.all()  # Recuperar todas las personas
+    personas = Persona.objects.all()
 
     # Crear la lista enlazada y agregar las personas
     lista = ListaEnlazada()
@@ -297,31 +333,42 @@ def ordenar_lista_enlazada(request):
 
     # Obtener la lista ordenada
     personas_ordenadas = lista.mostrar()
-    
-    # Asignar turnos en orden secuencial
+
+    # Asignar turnos en orden secuencial y guardar los cambios
     for index, persona in enumerate(personas_ordenadas, start=1):
         persona.turno = index
         persona.save()  # Guarda el nuevo turno en la base de datos
 
-    return render(request, 'hola_mundo.html', {'personas': personas_ordenadas})
+    # Obtener la primera persona no atendida
+    persona_atender = next((persona for persona in personas_ordenadas if not persona.atendido), None)
 
-# Vista para buscar personas en la tabla por un atributo en especifico
+    return render(request, 'hola_mundo.html', {
+        'personas': personas_ordenadas,  # Pasar las personas ordenadas
+        'persona_atender': persona_atender,  # Pasar la persona a atender
+    })
+
+
+
 def buscar_personas(request):
-    valor = request.GET.get('q', '')
-    atributo = request.GET.get('atributo', 'nombre')
-    personas = Persona.objects.all()
+    valor = request.GET.get('q', '')  # Obtener el término de búsqueda
+    atributo = request.GET.get('atributo', 'nombre')  # Obtener el atributo por el cual se busca
+    personas = Persona.objects.all()  # Recuperar todas las personas
 
-    # Creamos la lista enlazada
+    # Crear la lista enlazada
     lista = ListaEnlazada()
     for persona in personas:
         lista.insertar(persona)
-    
-    # Buscamos todas las personas que coincidan
+
+    # Buscar todas las personas que coincidan con el valor y el atributo
     personas_encontradas = lista.buscar_todas(valor, atributo)
-    
+
+    # Obtener la primera persona no atendida de los resultados de búsqueda
+    persona_atender = next((persona for persona in personas_encontradas if not persona.atendido), None)
+
     # Preparar el contexto para renderizar
     contexto = {
-        'personas': personas,
-        'personas_encontradas': personas_encontradas,  # Lista de personas que coinciden con la búsqueda
+        'personas': personas,  # Todas las personas (para mostrar en la tabla completa)
+        'personas_encontradas': personas_encontradas,  # Lista de personas encontradas
+        'persona_atender': persona_atender,  # Persona a atender (si existe)
     }
     return render(request, 'hola_mundo.html', contexto)

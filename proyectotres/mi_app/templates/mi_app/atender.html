@@ -12,6 +12,13 @@
 <body>
     <div class="container form-container">
         <h1>Atender a {{ persona.nombre }} {{ persona.apellido }}</h1>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                <strong>Error: </strong> {{ error }}
+            </div>
+        {% endif %}
+
         <form id="atender-form" method="POST" onsubmit="return showConfirmAlert('{{ persona.nombre }}', '{{ persona.apellido }}')">
             {% csrf_token %}
             <label for="fecha_cita">Fecha de Cita:</label>
@@ -21,6 +28,43 @@
             <button type="submit">Confirmar</button>
         </form>
     </div>
+
     <script src="{% static 'js/atender.js' %}"></script>
+    <script>
+        // Esta función muestra el SweetAlert antes de enviar el formulario
+        function showConfirmAlert(nombre, apellido) {
+            // Aquí verificamos si la persona ya fue atendida
+            const personaAtendida = "{{ persona.atendido|yesno:'true,false' }}" === "true";
+
+            if (personaAtendida) {
+                // Si la persona ya fue atendida, mostramos el SweetAlert
+                Swal.fire({
+                    title: 'Esta persona ya fue atendida',
+                    text: 'No puedes atender a esta persona nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+                return false;  // Evitar que se envíe el formulario
+            } else {
+                // Si la persona no fue atendida, muestra la confirmación
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: `¿Deseas atender a ${nombre} ${apellido}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, atender',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Si se confirma, enviar el formulario
+                        document.getElementById('atender-form').submit();
+                    }
+                });
+
+                return false;  // Evitar el envío del formulario hasta que el usuario confirme
+            }
+        }
+    </script>
 </body>
 </html>
